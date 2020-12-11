@@ -1,15 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as f
-from time import time 
+from time import time
 import global_v as glv
+import neighbors as nb
 
-
-class TSSLBP(torch.autograd.Function): 
+class TSSLBP(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, inputs, network_config, layer_config):
+    def forward(ctx, inputs, network_config, layer_config, name):
         shape = inputs.shape
-        n_steps = shape[4] 
+        n_steps = shape[4]
         theta_m = 1/network_config['tau_m']
         tau_s = network_config['tau_s']
         theta_s = 1/tau_s
@@ -39,19 +39,24 @@ class TSSLBP(torch.autograd.Function):
         mem_updates = torch.stack(mem_updates, dim = 4)
         outputs = torch.stack(outputs, dim = 4)
         syns_posts = torch.stack(syns_posts, dim = 4)
-        ctx.save_for_backward(mem_updates, outputs, mems, torch.tensor([threshold, tau_s, theta_m]))
+        layer_index = glv.layers_name.index(name)
+        ctx.save_for_backward(mem_updates, outputs, mems, syns_posts,\
+                torch.tensor([threshold, tau_s, theta_m, layer_index]))
 
         return syns_posts
 
     @staticmethod
     def backward(ctx, grad_delta):
-        (delta_u, outputs, u, others) = ctx.saved_tensors
+        (delta_u, outputs, u, syns_posts, others) = ctx.saved_tensors
         shape = grad_delta.shape
         n_steps = shape[4]
         threshold = others[0].item()
         tau_s = others[1].item()
         theta_m = others[2].item()
-
+        name = others[3].item()
+        neighbors = nb.neighbors_predict(outputs, u, name)
+        neighbors_syns_posts = nb.neighbors_syns_posts(neighbors)
+        cos_score = nb.similarity(neighbors_syns_posts, syns_posts, grad_delta)
         grad = torch.zeros_like(grad_delta)
 
         syn_a = glv.syn_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
@@ -60,23 +65,24 @@ class TSSLBP(torch.autograd.Function):
 
         if torch.sum(outputs)/(shape[0]*shape[1]*shape[2]*shape[3]*shape[4]) > 0.05:
             theta = torch.zeros((shape[0], shape[1], shape[2], shape[3]), dtype=glv.dtype, device=glv.device)
-            for t in range(n_steps-1, -1, -1): 
+            for t in range(n_steps-1, -1, -1):
                 # time_end = int(min(t+tau_s, n_steps))
                 time_end = n_steps
                 time_len = time_end-t
 
                 out = outputs[..., t]
                 partial_u = (torch.clamp(-1/delta_u[..., t], -10, 10) * out)
-                
+
                 # current time is t_m 
                 partial_a_partial_u = partial_u.unsqueeze(-1).repeat(1, 1, 1, 1, time_len) * partial_a[..., 0:time_len]
 
-                grad[..., t] = torch.sum(partial_a_partial_u*grad_delta[..., t:time_end], dim=4) 
+                grad[..., t] = torch.sum(partial_a_partial_u*grad_delta[...,\
+                    t:time_end], dim=4)
 
                 # effect of reset
                 if t!=n_steps-1:
                     grad[..., t] += theta * u[..., t] * (-1) * theta_m * partial_u
-              
+
                 # current time is t_p
                 theta = grad[..., t] * out + theta * (1-out) * (1-theta_m)
 
@@ -95,5 +101,4 @@ class TSSLBP(torch.autograd.Function):
 
                 grad[..., t] = grad_a * f
 
-        return grad, None, None
-    
+        return grad, None, None, None

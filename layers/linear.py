@@ -40,7 +40,7 @@ class LinearLayer(nn.Linear):
 
         nn.init.kaiming_normal_(self.weight)
         self.weight = torch.nn.Parameter(weight_scale * self.weight, requires_grad=True)
-        
+
         print("linear")
         print(self.name)
         print(self.in_shape)
@@ -60,7 +60,8 @@ class LinearLayer(nn.Linear):
 
     def forward_pass(self, x, epoch):
         y = self.forward(x)
-        y = tsslbp.TSSLBP.apply(y, self.network_config, self.layer_config)
+        y = tsslbp.TSSLBP.apply(y, self.network_config, self.layer_config,\
+                self.name)
         return y
 
     def get_parameters(self):

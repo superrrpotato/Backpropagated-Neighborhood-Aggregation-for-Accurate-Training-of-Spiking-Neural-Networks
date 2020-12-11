@@ -93,7 +93,8 @@ class ConvLayer(nn.Conv3d):
 
     def forward_pass(self, x, epoch):
         y = self.forward(x)
-        y = tsslbp.TSSLBP.apply(y, self.network_config, self.layer_config)
+        y = tsslbp.TSSLBP.apply(y, self.network_config, self.layer_config,\
+                self.name)
         return y
 
     def weight_clipper(self):

@@ -184,15 +184,15 @@ if __name__ == '__main__':
         config_path = args.config
 
     logging.basicConfig(filename='result.log', level=logging.INFO)
-    
+
     logging.info("start parsing settings")
-    
+
     params = parse(config_path)
-    
+
     logging.info("finish parsing settings")
-    
+
     dtype = torch.float32
-    
+
     # Check whether a GPU is available
     if torch.cuda.is_available():
         device = torch.device("cuda")
@@ -203,9 +203,7 @@ if __name__ == '__main__':
     else:
         device = torch.device("cpu")
         print("No GPU is found")
-    
-    glv.init(dtype, device, params['Network']['n_steps'], params['Network']['tau_s'] )
-    
+    glv.init(dtype, device, params)
     logging.info("dataset loaded")
     if params['Network']['dataset'] == "MNIST":
         data_path = os.path.expanduser(params['Network']['data_path'])
