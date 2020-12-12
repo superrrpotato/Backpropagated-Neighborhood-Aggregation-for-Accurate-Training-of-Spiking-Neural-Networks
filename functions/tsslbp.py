@@ -49,6 +49,7 @@ class TSSLBP(torch.autograd.Function):
     def backward(ctx, grad_delta):
         (delta_u, outputs, u, syns_posts, others) = ctx.saved_tensors
         shape = grad_delta.shape
+        neuron_num = shape[0] * shape[1] * shape[2] * shape[3]
         n_steps = shape[4]
         threshold = others[0].item()
         tau_s = others[1].item()
@@ -57,6 +58,17 @@ class TSSLBP(torch.autograd.Function):
         neighbors = nb.neighbors_predict(outputs, u, name)
         neighbors_syns_posts = nb.neighbors_syns_posts(neighbors)
         cos_score = nb.similarity(neighbors_syns_posts, syns_posts, grad_delta)
+        best_neighbor = torch.argmax(cos_score, dim=0)
+        #neighbors = neighbors.view(neuron_num * n_steps, -1)
+        #best_neighbor = best_neighbor * neuron_num +\
+        #    torch.tensor(range(neuron_num))
+        #selected_neighbor = neighbors[best_neighbor]
+        mask = torch.eye(n_steps)[best_neighbor].view(shape)
+        grad = mask * (outputs - 0.5) * 0.02
+        #grad = mask
+        #print(mask.shape)
+        #grad = None
+        """
         grad = torch.zeros_like(grad_delta)
 
         syn_a = glv.syn_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
@@ -73,7 +85,7 @@ class TSSLBP(torch.autograd.Function):
                 out = outputs[..., t]
                 partial_u = (torch.clamp(-1/delta_u[..., t], -10, 10) * out)
 
-                # current time is t_m 
+                # current time is t_m
                 partial_a_partial_u = partial_u.unsqueeze(-1).repeat(1, 1, 1, 1, time_len) * partial_a[..., 0:time_len]
 
                 grad[..., t] = torch.sum(partial_a_partial_u*grad_delta[...,\
@@ -100,5 +112,5 @@ class TSSLBP(torch.autograd.Function):
                 f = f / ((1 + f) * (1 + f) * a)
 
                 grad[..., t] = grad_a * f
-
+        """
         return grad, None, None, None

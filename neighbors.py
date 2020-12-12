@@ -47,9 +47,15 @@ def neighbors_syns_posts(neighbors):
 
 def similarity(neighbors_syns_posts, syns_posts, grad_delta):
     shape = syns_posts.shape
-    syns_posts.reshape(shape[0]*shape[1]*shape[2]*shape[3], shape[4])
-    grad_delta.reshape(shape[0]*shape[1]*shape[2]*shape[3], shape[4])
-    print(neighbors_syns_posts.shape)
-    print(syns_posts.shape)
-    print(grad_delta.shape)
-
+    syns_posts = syns_posts.reshape(shape[0]*shape[1]*shape[2]*shape[3], shape[4])
+    grad_delta = grad_delta.reshape(shape[0]*shape[1]*shape[2]*shape[3], shape[4])
+    syns_posts = syns_posts.repeat(shape[4], 1, 1)
+    grad_delta = grad_delta.repeat(shape[4], 1, 1)
+    delta_syns_posts = neighbors_syns_posts - syns_posts
+    dot_product = torch.sum(delta_syns_posts * (- grad_delta), dim = -1)
+    d_syns_norm = torch.sqrt(torch.sum(delta_syns_posts * delta_syns_posts,\
+            dim = -1))
+    grad_d_norm = torch.sqrt(torch.sum(grad_delta * grad_delta,\
+            dim = -1))
+    cos_score = dot_product/(d_syns_norm * grad_d_norm)
+    return cos_score
