@@ -2,8 +2,8 @@ import os
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-#import pycuda.driver as cuda
-#import pycuda.autoinit  # Necessary for using its functions
+import pycuda.driver as cuda
+import pycuda.autoinit  # Necessary for using its functions
 
 
 # task_train = Progress().add_task("[red]Training...", total=100)

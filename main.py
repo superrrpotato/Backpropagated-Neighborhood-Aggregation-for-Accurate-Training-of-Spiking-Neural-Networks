@@ -11,7 +11,7 @@ from utils import EarlyStopping
 import functions.loss_f as loss_f
 import numpy as np
 from datetime import datetime
-#import pycuda.driver as cuda
+import pycuda.driver as cuda
 from torch.nn.utils import clip_grad_norm_
 from torch.nn.utils import clip_grad_value_
 import global_v as glv
@@ -230,9 +230,9 @@ if __name__ == '__main__':
 
     error = loss_f.SpikeLoss(params['Network']).to(device)
 
-    optimizer = torch.optim.AdamW(net.get_parameters(), lr=params['Network']['lr'], betas=(0.9, 0.999))
-    #optimizer = torch.optim.SGD(net.get_parameters(), lr =
-    #        params['Network']['lr'] * 100, 0.9)
+    #optimizer = torch.optim.AdamW(net.get_parameters(), lr=params['Network']['lr'], betas=(0.9, 0.999))
+    optimizer = torch.optim.SGD(net.get_parameters(), lr=\
+            params['Network']['lr'] * 100, momentum=0)
     best_acc = 0
     best_epoch = 0
     
