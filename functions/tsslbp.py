@@ -68,11 +68,11 @@ class TSSLBP(torch.autograd.Function):
         projects = projects.view(n_steps * neuron_num, -1)
         best_projects = projects[best_neighbor * neuron_num +\
                 torch.tensor(range(neuron_num), device=glv.device)]
-        #best_projects = best_projects.where(best_projects > 0, best_projects * 0)
+        # best_projects = best_projects.where(best_projects > 0, best_projects * 0)
         best_projects = best_projects.repeat(1, n_steps).view(shape)
-        #sig = nb.sigmoid(u, 0.2)
-        #sig_grad = sig * (1 - sig) / 0.2
-        grad = mask * best_projects# * grad_delta * sig_grad
+        sig = nb.sigmoid(u, 2)
+        sig_grad = sig * (1 - sig) * 0.5
+        grad = mask * best_projects * sig_grad
         # print(best_neighbor.shape)
         # print(mask.shape)
         # print(projects.shape)
