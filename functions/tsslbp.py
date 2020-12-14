@@ -57,60 +57,43 @@ class TSSLBP(torch.autograd.Function):
         name = others[3].item()
         neighbors = nb.neighbors_predict(outputs, u, name)
         neighbors_syns_posts = nb.neighbors_syns_posts(neighbors)
-        cos_score = nb.similarity(neighbors_syns_posts, syns_posts, grad_delta)
-        best_neighbor = torch.argmax(cos_score, dim=0)
+        projects = nb.projects(neighbors_syns_posts, syns_posts, grad_delta)
+        best_neighbor = torch.argmax(projects, dim=0)
         #neighbors = neighbors.view(neuron_num * n_steps, -1)
         #best_neighbor = best_neighbor * neuron_num +\
         #    torch.tensor(range(neuron_num))
         #selected_neighbor = neighbors[best_neighbor]
         mask = torch.eye(n_steps)[best_neighbor].view(shape)
-        grad = mask * (outputs - 0.5) * 0.02
-        #grad = mask
-        #print(mask.shape)
+        mask = mask * (outputs - 0.5) * 0.2
+        projects = projects.view(n_steps * neuron_num, -1)
+        best_projects = projects[best_neighbor * neuron_num +\
+                torch.tensor(range(neuron_num))]
+        #best_projects = best_projects.where(best_projects > 0, best_projects * 0)
+        best_projects = best_projects.repeat(1, n_steps).view(shape)
+        #sig = nb.sigmoid(u, 0.2)
+        #sig_grad = sig * (1 - sig) / 0.2
+        grad = mask * best_projects# * grad_delta * sig_grad
+        # print(best_neighbor.shape)
+        # print(mask.shape)
+        # print(projects.shape)
+        # print(neighbors.shape)
+        # print(best_projects[0,0,0,0])
         #grad = None
         """
         grad = torch.zeros_like(grad_delta)
-
         syn_a = glv.syn_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
-        partial_a = glv.syn_a/(-tau_s)
-        partial_a = partial_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
+        for t in range(n_steps):
+            # time_end = int(min(t+tau_s, n_steps))
+            time_end = n_steps
+            time_len = time_end-t
+            grad_a = torch.sum(syn_a[..., 0:time_len]*grad_delta[..., t:time_end], dim=-1)
 
-        if torch.sum(outputs)/(shape[0]*shape[1]*shape[2]*shape[3]*shape[4]) > 0.05:
-            theta = torch.zeros((shape[0], shape[1], shape[2], shape[3]), dtype=glv.dtype, device=glv.device)
-            for t in range(n_steps-1, -1, -1):
-                # time_end = int(min(t+tau_s, n_steps))
-                time_end = n_steps
-                time_len = time_end-t
+            a = 0.2
+            f = torch.clamp((-1 * u[..., t] + threshold) / a, -8, 8)
+            f = torch.exp(f)
+            f = f / ((1 + f) * (1 + f) * a)
 
-                out = outputs[..., t]
-                partial_u = (torch.clamp(-1/delta_u[..., t], -10, 10) * out)
-
-                # current time is t_m
-                partial_a_partial_u = partial_u.unsqueeze(-1).repeat(1, 1, 1, 1, time_len) * partial_a[..., 0:time_len]
-
-                grad[..., t] = torch.sum(partial_a_partial_u*grad_delta[...,\
-                    t:time_end], dim=4)
-
-                # effect of reset
-                if t!=n_steps-1:
-                    grad[..., t] += theta * u[..., t] * (-1) * theta_m * partial_u
-
-                # current time is t_p
-                theta = grad[..., t] * out + theta * (1-out) * (1-theta_m)
-
-        else:
-            for t in range(n_steps):
-                # time_end = int(min(t+tau_s, n_steps))
-                time_end = n_steps
-                time_len = time_end-t
-
-                grad_a = torch.sum(syn_a[..., 0:time_len]*grad_delta[..., t:time_end], dim=-1)
-
-                a = 0.2
-                f = torch.clamp((-1 * u[..., t] + threshold) / a, -8, 8)
-                f = torch.exp(f)
-                f = f / ((1 + f) * (1 + f) * a)
-
-                grad[..., t] = grad_a * f
+            grad[..., t] = grad_a * f
+        grad = grad + grad_n
         """
         return grad, None, None, None

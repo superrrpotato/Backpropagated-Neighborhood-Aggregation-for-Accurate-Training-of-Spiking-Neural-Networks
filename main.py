@@ -2,7 +2,7 @@ import os
 
 import torch
 from network_parser import parse
-from datasets import loadMNIST, loadCIFAR10, loadFashionMNIST, loadNMNIST_Spiking 
+from datasets import loadMNIST, loadCIFAR10, loadFashionMNIST, loadNMNIST_Spiking
 import logging
 import cnns
 from utils import learningStats
@@ -50,7 +50,7 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
     des_str = "Training @ epoch " + str(epoch)
     for batch_idx, (inputs, labels) in enumerate(trainloader):
         start_time = datetime.now()
-        targets = torch.zeros((labels.shape[0], n_class, 1, 1, n_steps), dtype=dtype).to(device) 
+        targets = torch.zeros((labels.shape[0], n_class, 1, 1, n_steps), dtype=dtype).to(device)
         if network_config["rule"] == "TSSLBP":
             if len(inputs.shape) < 5:
                 inputs = inputs.unsqueeze_(-1).repeat(1, 1, 1, 1, n_steps)
@@ -101,7 +101,7 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
 
         states.training.correctSamples = correct
         states.training.numSamples = total
-        states.training.lossSum += loss.cpu().data.item() 
+        states.training.lossSum += loss.cpu().data.item()
         states.print(epoch, batch_idx, (datetime.now() - time).total_seconds())
 
     total_accuracy = correct / total
@@ -220,18 +220,19 @@ if __name__ == '__main__':
     else:
         raise Exception('Unrecognized dataset name.')
     logging.info("dataset loaded")
-    
+
     net = cnns.Network(params['Network'], params['Layers'], list(train_loader.dataset[0][0].shape)).to(device)
-    
+
     if args.checkpoint is not None:
         checkpoint_path = args.checkpoint
         checkpoint = torch.load(checkpoint_path)
         net.load_state_dict(checkpoint['net'])
-    
+
     error = loss_f.SpikeLoss(params['Network']).to(device)
-    
+
     optimizer = torch.optim.AdamW(net.get_parameters(), lr=params['Network']['lr'], betas=(0.9, 0.999))
-    
+    #optimizer = torch.optim.SGD(net.get_parameters(), lr =
+    #        params['Network']['lr'] * 100, 0.9)
     best_acc = 0
     best_epoch = 0
     
