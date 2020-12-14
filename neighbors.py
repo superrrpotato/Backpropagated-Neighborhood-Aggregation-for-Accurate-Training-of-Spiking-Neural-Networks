@@ -13,7 +13,7 @@ def neighbors_predict(outputs, u, k):
     neighbors = []
     for t in range(time_steps):
         neighbor_output = outputs > 0
-        near_by = torch.ones(neuron_num, dtype=torch.bool)
+        near_by = torch.ones(neuron_num, dtype=torch.bool, device=glv.device)
         current_t = t
         while near_by.any() == True:
             neighbor_output[:, current_t] = neighbor_output[:, current_t] ^ near_by
@@ -37,7 +37,7 @@ def neighbors_syns_posts(neighbors):
     neighbors = neighbors.type(glv.dtype)
     neighbors = neighbors.view(shape[0]*shape[1], shape[2])
     syns_posts = []
-    syn = torch.zeros(shape[0]*shape[1], dtype=glv.dtype)
+    syn = torch.zeros(shape[0]*shape[1], dtype=glv.dtype, device=glv.device)
     for i in range(shape[2]):
         syn = syn + (neighbors[:, i] - syn) * theta_s
         syns_posts.append(syn)
