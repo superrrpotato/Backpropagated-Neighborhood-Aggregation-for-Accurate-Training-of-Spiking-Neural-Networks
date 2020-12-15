@@ -86,7 +86,7 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
             opti.zero_grad()
 
             loss.backward()
-            clip_grad_norm_(network.get_parameters(), 1)
+            # clip_grad_norm_(network.get_parameters(), 1)
             opti.step()
             network.weight_clipper()
 

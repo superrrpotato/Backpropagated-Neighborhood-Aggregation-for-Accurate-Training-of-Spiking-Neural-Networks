@@ -58,6 +58,11 @@ class TSSLBP(torch.autograd.Function):
         neighbors = nb.neighbors_predict(outputs, u, name)
         neighbors_syns_posts = nb.neighbors_syns_posts(neighbors)
         projects = nb.projects(neighbors_syns_posts, syns_posts, grad_delta)
+        projects = projects.T.view(shape)
+        sig = nb.sigmoid(u, 2)
+        sig_grad = sig * (1 - sig) * 0.5
+        grad = projects * (outputs - 0.5) * 2 * sig_grad
+        """
         best_neighbor = torch.argmax(projects, dim=0)
         #neighbors = neighbors.view(neuron_num * n_steps, -1)
         #best_neighbor = best_neighbor * neuron_num +\
@@ -73,6 +78,7 @@ class TSSLBP(torch.autograd.Function):
         sig = nb.sigmoid(u, 2)
         sig_grad = sig * (1 - sig) * 0.5
         grad = mask * best_projects * sig_grad
+        """
         # print(best_neighbor.shape)
         # print(mask.shape)
         # print(projects.shape)
