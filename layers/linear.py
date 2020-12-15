@@ -69,5 +69,5 @@ class LinearLayer(nn.Linear):
 
     def weight_clipper(self):
         w = self.weight.data
-        w = w.clamp(-4, 4)
+        w = w.clamp(-2, 2)
         self.weight.data = w

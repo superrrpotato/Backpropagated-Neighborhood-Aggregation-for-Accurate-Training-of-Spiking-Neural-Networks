@@ -195,7 +195,7 @@ if __name__ == '__main__':
 
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = torch.device("cuda")
+        device = 3 #torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
@@ -230,19 +230,21 @@ if __name__ == '__main__':
 
     error = loss_f.SpikeLoss(params['Network']).to(device)
 
-    #optimizer = torch.optim.AdamW(net.get_parameters(), lr=params['Network']['lr'], betas=(0.9, 0.999))
-    optimizer = torch.optim.SGD(net.get_parameters(), lr=\
-            params['Network']['lr'] * 100, momentum=0)
+    optimizer = torch.optim.AdamW(net.get_parameters(), lr=params['Network']['lr'], betas=(0.9, 0.999))
+    #optimizer = torch.optim.SGD(net.get_parameters(), lr=\
+    #        params['Network']['lr'] * 100, momentum=0)
     best_acc = 0
     best_epoch = 0
     
     l_states = learningStats()
     early_stopping = EarlyStopping()
-    
+    my_lr_scheduler =\
+        torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.98)
     for e in range(params['Network']['epochs']):
         l_states.training.reset()
         train(net, train_loader, optimizer, e, l_states, params['Network'], params['Layers'], error)
         l_states.training.update()
+        my_lr_scheduler.step()
         l_states.testing.reset()
         test(net, test_loader, e, l_states, params['Network'], params['Layers'], early_stopping)
         l_states.testing.update()
