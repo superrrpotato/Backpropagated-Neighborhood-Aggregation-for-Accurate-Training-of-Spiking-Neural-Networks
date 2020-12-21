@@ -55,7 +55,8 @@ def projects(neighbors_syns_posts, syns_posts, grad_delta):
     dot_product = torch.sum(delta_syns_posts * (- grad_delta), dim = -1)
     d_syns_norm = torch.sqrt(torch.sum(delta_syns_posts * delta_syns_posts,\
             dim = -1))
-    projects = dot_product/d_syns_norm
+    grad_d_norm = torch.sqrt(torch.sum(grad_delta * grad_delta, dim=-1))
+    projects = dot_product/(d_syns_norm * grad_d_norm)
     return projects
 
 def sigmoid(x, temp):
