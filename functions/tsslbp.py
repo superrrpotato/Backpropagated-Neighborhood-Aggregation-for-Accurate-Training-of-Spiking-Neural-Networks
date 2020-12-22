@@ -59,9 +59,10 @@ class TSSLBP(torch.autograd.Function):
         neighbors_syns_posts = nb.neighbors_syns_posts(neighbors)
         projects = nb.projects(neighbors_syns_posts, syns_posts, grad_delta)
         projects = projects.T.view(shape)
-        sig = nb.sigmoid(u, 2)
-        sig_grad = sig * (1 - sig) * 0.5
-        grad = projects * (outputs - 0.5) * 2 * sig_grad
+        #sig = nb.sigmoid(u, 2)
+        #sig_grad = sig * (1 - sig) * 0.5
+        dist_aggregate_factor = 0.2/(torch.abs(u-threshold)+0.2)
+        grad = projects * (outputs - 0.5) * 2 * dist_aggregate_factor#sig_grad
         """
         best_neighbor = torch.argmax(projects, dim=0)
         #neighbors = neighbors.view(neuron_num * n_steps, -1)

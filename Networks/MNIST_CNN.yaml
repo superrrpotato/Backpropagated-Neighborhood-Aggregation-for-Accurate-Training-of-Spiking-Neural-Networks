@@ -1,6 +1,6 @@
 Network:
   epochs: 200
-  batch_size: 50
+  batch_size: 64
   n_steps: 5
   dataset: "MNIST"
   rule: "TSSLBP"
