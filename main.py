@@ -41,11 +41,12 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
 
     if network_config['loss'] == "kernel":
         # set target signal
-        if n_steps >= 10:
-            desired_spikes = torch.tensor([0, 1, 0, 1, 0, 1, 0, 1, 0, 1]).repeat(int(n_steps/10))
-        else:
-            desired_spikes = torch.tensor([1, 1, 1, 1, 1]).repeat(int(n_steps/5))
-        desired_spikes = desired_spikes.view(1, 1, 1, 1, n_steps).to(device)
+        #if n_steps >= 10:
+        #    desired_spikes = torch.tensor([0, 1, 0, 1, 0, 1, 0, 1, 0, 1]).repeat(int(n_steps/10))
+        #else:
+        #    desired_spikes = torch.tensor([1, 1, 1, 1, 1]).repeat(int(n_steps/5))
+        desired_spikes = torch.ones(n_steps, dtype=glv.dtype, device=glv.device)
+        desired_spikes = desired_spikes.view(1, 1, 1, 1, n_steps)#.to(device)
         desired_spikes = loss_f.psp(desired_spikes, network_config).view(1, 1, 1, n_steps)
     des_str = "Training @ epoch " + str(epoch)
     for batch_idx, (inputs, labels) in enumerate(trainloader):
@@ -195,7 +196,7 @@ if __name__ == '__main__':
 
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = 1#torch.device("cuda")
+        device = 2#torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
