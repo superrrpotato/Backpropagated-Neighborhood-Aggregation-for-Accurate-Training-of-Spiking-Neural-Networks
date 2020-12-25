@@ -87,7 +87,7 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
             opti.zero_grad()
 
             loss.backward()
-            # clip_grad_norm_(network.get_parameters(), 1)
+            clip_grad_norm_(network.get_parameters(), 1)
             opti.step()
             network.weight_clipper()
 
@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = 2#torch.device("cuda")
+        device = 0#torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
@@ -233,7 +233,7 @@ if __name__ == '__main__':
 
     optimizer = torch.optim.AdamW(net.get_parameters(), lr=params['Network']['lr'], betas=(0.9, 0.999))
     #optimizer = torch.optim.SGD(net.get_parameters(), lr=\
-    #        params['Network']['lr'] * 100, momentum=0)
+    #        params['Network']['lr'], momentum=0)
     best_acc = 0
     best_epoch = 0
     
