@@ -55,12 +55,16 @@ class TSSLBP(torch.autograd.Function):
         tau_s = others[1].item()
         theta_m = others[2].item()
         name = others[3].item()
+
         projects = nb.get_projects(outputs, u, name, syns_posts, grad_delta)
         projects = projects.T.view(shape)
-        dist_aggregate_factor = 0.2/(torch.abs(u-threshold)+0.2)
+        dist_aggregate_factor = 1/((u-threshold)**2 + 1)
+        #m = torch.nn.Softmax(dim=-1)
+        #dist_aggregate_factor = m(dist_aggregate_factor)
         #grad = grad_delta * dist_aggregate_factor
         grad = projects * (outputs - 0.5) * 2 * dist_aggregate_factor#sig_grad
         """
+
         grad = torch.zeros_like(grad_delta)
         syn_a = glv.syn_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
         for t in range(n_steps):
@@ -75,6 +79,6 @@ class TSSLBP(torch.autograd.Function):
             f = f / ((1 + f) * (1 + f) * a)
 
             grad[..., t] = grad_a * f
-        grad = grad + grad_n
+        #grad = grad + grad_n
         """
         return grad, None, None, None

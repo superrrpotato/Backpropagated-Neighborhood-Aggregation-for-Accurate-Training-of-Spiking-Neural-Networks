@@ -233,7 +233,7 @@ if __name__ == '__main__':
 
     optimizer = torch.optim.AdamW(net.get_parameters(), lr=params['Network']['lr'], betas=(0.9, 0.999))
     #optimizer = torch.optim.SGD(net.get_parameters(), lr=\
-    #        params['Network']['lr'], momentum=0)
+    #        params['Network']['lr'], momentum=0.9)
     best_acc = 0
     best_epoch = 0
     

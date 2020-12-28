@@ -5,7 +5,7 @@ Network:
   dataset: "MNIST"
   rule: "TSSLBP"
   data_path: "../../datasets/mnist"
-  lr: 0.001
+  lr: 0.0005
   loss: "kernel"
   n_class: 10
   desired_count: 5

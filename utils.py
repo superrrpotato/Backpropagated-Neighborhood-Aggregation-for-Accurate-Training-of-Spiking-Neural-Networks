@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import torch
+import global_v as glv
 import matplotlib.pyplot as plt
 import pycuda.driver as cuda
 import pycuda.autoinit  # Necessary for using its functions
@@ -421,5 +422,5 @@ class EarlyStopping:
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/ckpt.pth')
+        torch.save(state, './checkpoint/ckpt'+str(len(glv.layers_name))+'.pth')
         self.val_min = val
