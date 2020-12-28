@@ -61,29 +61,6 @@ class TSSLBP(torch.autograd.Function):
         #grad = grad_delta * dist_aggregate_factor
         grad = projects * (outputs - 0.5) * 2 * dist_aggregate_factor#sig_grad
         """
-        best_neighbor = torch.argmax(projects, dim=0)
-        #neighbors = neighbors.view(neuron_num * n_steps, -1)
-        #best_neighbor = best_neighbor * neuron_num +\
-        #    torch.tensor(range(neuron_num))
-        #selected_neighbor = neighbors[best_neighbor]
-        mask = torch.eye(n_steps, device=glv.device)[best_neighbor].view(shape)
-        mask = mask * (outputs - 0.5) * 0.2
-        projects = projects.view(n_steps * neuron_num, -1)
-        best_projects = projects[best_neighbor * neuron_num +\
-                torch.tensor(range(neuron_num), device=glv.device)]
-        # best_projects = best_projects.where(best_projects > 0, best_projects * 0)
-        best_projects = best_projects.repeat(1, n_steps).view(shape)
-        sig = nb.sigmoid(u, 2)
-        sig_grad = sig * (1 - sig) * 0.5
-        grad = mask * best_projects * sig_grad
-        """
-        # print(best_neighbor.shape)
-        # print(mask.shape)
-        # print(projects.shape)
-        # print(neighbors.shape)
-        # print(best_projects[0,0,0,0])
-        #grad = None
-        """
         grad = torch.zeros_like(grad_delta)
         syn_a = glv.syn_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
         for t in range(n_steps):
