@@ -109,3 +109,16 @@ def get_projects(outputs, u, name, syns_posts, grad_delta):
     projects = torch.stack(projects, dim=0)
     return projects
         #neighbors += [neighbor_output]
+def index_to_spike_train(index, time_steps):
+    return np.array(
+            ['0']*(
+                time_steps-len(list(bin(index)[2:]))
+                )+list(bin(index)[2:])
+            ).astype('int')
+def spike_train_to_index(spike_train):
+    return int(
+            '0b'+''.join(
+                str(
+                    np.array(spike_train).astype('int')
+                )[1:-1].split(' ')
+            ),0)
