@@ -58,16 +58,16 @@ class TSSLBP(torch.autograd.Function):
 
         projects = nb.get_projects(outputs, u, name, syns_posts, grad_delta)
         projects = projects.T.view(shape)
-        dist_aggregate_factor = 0.1/((u-threshold)**2 + 0.1)
+        dist_aggregate_factor = 0.2/((u-threshold)**2 + 0.2)
         #m = torch.nn.Softmax(dim=-1)
         #dist_aggregate_factor = m(dist_aggregate_factor)
         #grad = grad_delta * dist_aggregate_factor
         grad = projects * (outputs - 0.5) * 2 * dist_aggregate_factor#sig_grad
-        #nb.update_norm(grad, name)
-        #mean = torch.mean(torch.abs(grad))
-        #last_norm = glv.grad_norm_dict[glv.last_layer_name]
+        nb.update_norm(grad, name)
+        mean = torch.mean(torch.abs(grad))
+        last_norm = glv.grad_norm_dict[glv.last_layer_name]
         #grad = grad/mean * last_norm * torch.log(mean/last_norm + 1.1)
-        #grad = grad * torch.log(liast_norm/mean + 1.1)
+        grad = grad * torch.log(last_norm/mean + 1.05) * 2
         nb.update_norm(grad, name)
         """
 
