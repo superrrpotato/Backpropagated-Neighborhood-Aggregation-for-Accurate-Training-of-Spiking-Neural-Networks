@@ -122,3 +122,8 @@ def spike_train_to_index(spike_train):
                     np.array(spike_train).astype('int')
                 )[1:-1].split(' ')
             ),0)
+def update_norm(grad, name):
+    if len(glv.grad_norm_dict)==0:
+        glv.last_layer_name = int(name)
+    glv.grad_norm_dict[int(name)]\
+    =round(torch.mean(torch.abs(grad)).cpu().item(), 3)

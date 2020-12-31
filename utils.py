@@ -206,7 +206,7 @@ class learningStats():
         epochStr = 'Epoch : %10d' % (epoch)
         iterStr = '' if iter is None else '(i = %7d)' % (iter)
         profileStr = '' if timeElapsed is None else ', %12.4f s elapsed' % timeElapsed
-
+        gradNormStr = str(glv.grad_norm_dict)[1:-1]
         if header is not None:
             for h in header:
                 print('\033[2K' + str(h))
@@ -215,7 +215,8 @@ class learningStats():
         print(epochStr + iterStr + profileStr)
         print(self.training.displayString())
         print(self.testing.displayString())
-        self.linesPrinted += 3
+        print(gradNormStr)
+        self.linesPrinted += 4
 
         if footer is not None:
             for f in footer:

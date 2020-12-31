@@ -1,11 +1,11 @@
 Network:
   epochs: 150
-  batch_size: 50
+  batch_size: 64
   n_steps: 5
   dataset: "CIFAR10"
   data_path: "../../datasets/cifar10"
   rule: "TSSLBP"
-  lr: 0.0001
+  lr: 0.0002
   loss: "kernel"
   n_class: 10
   desired_count: 5
