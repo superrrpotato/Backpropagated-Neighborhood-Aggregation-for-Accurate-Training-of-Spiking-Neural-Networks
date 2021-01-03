@@ -99,7 +99,7 @@ Layers:
 
   dropout_6:
     type: "dropout"
-    p: 0.2
+    p: 0.5
 
   FC_2:
     type: "linear"

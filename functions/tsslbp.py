@@ -67,7 +67,7 @@ class TSSLBP(torch.autograd.Function):
         mean = torch.mean(torch.abs(grad))
         last_norm = glv.grad_norm_dict[glv.last_layer_name]
         #grad = grad/mean * last_norm * torch.log(mean/last_norm + 1.1)
-        grad = grad * torch.log(last_norm/mean + 1.05) * 2
+        grad = grad * torch.log(last_norm/mean + 1.02) * 1.2
         nb.update_norm(grad, name)
         """
 
