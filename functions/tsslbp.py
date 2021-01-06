@@ -64,13 +64,14 @@ class TSSLBP(torch.autograd.Function):
         #grad = grad_delta * dist_aggregate_factor
         grad = projects * (outputs - 0.5) * 2 * dist_aggregate_factor#sig_grad
         nb.update_norm(grad, name)
+
         mean = torch.mean(torch.abs(grad))
         last_norm = glv.grad_norm_dict[glv.last_layer_name]
         #grad = grad/mean * last_norm * torch.log(mean/last_norm + 1.1)
-        grad = grad * torch.log(last_norm/mean + 1.02) * 1.2
+        grad = grad * torch.log(last_norm/(mean+0.00001) + 1.02) * 1.2
         nb.update_norm(grad, name)
-        """
 
+        """
         grad = torch.zeros_like(grad_delta)
         syn_a = glv.syn_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
         for t in range(n_steps):
