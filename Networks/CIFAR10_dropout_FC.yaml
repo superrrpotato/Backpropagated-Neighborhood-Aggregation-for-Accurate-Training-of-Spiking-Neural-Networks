@@ -60,9 +60,9 @@ Layers:
     kernel_size: 2
     threshold: 0.5
 
-    #dropout_3:
-    #type: "dropout"
-    #p: 0.2
+  dropout_3:
+    type: "dropout"
+    p: 0.2
 
   conv_4:
     type: "conv"  # 8*8  7*7
