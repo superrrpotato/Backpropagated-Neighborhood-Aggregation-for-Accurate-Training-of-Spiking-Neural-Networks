@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = 3#torch.device("cuda")
+        device = 0#torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
@@ -239,7 +239,7 @@ if __name__ == '__main__':
     l_states = learningStats()
     early_stopping = EarlyStopping()
     my_lr_scheduler =\
-        torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.98)
+        torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.99)
     for e in range(params['Network']['epochs']):
         l_states.training.reset()
         train(net, train_loader, optimizer, e, l_states, params['Network'], params['Layers'], error)

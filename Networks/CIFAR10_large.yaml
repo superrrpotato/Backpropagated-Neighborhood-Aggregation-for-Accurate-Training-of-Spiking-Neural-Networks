@@ -1,11 +1,11 @@
 Network:
-  epochs: 150
+  epochs: 300
   batch_size: 50
   n_steps: 5
   dataset: "CIFAR10"
   data_path: "../../datasets/cifar10"
   rule: "TSSLBP"
-  lr: 0.0001
+  lr: 0.0005
   loss: "kernel"
   n_class: 10
   desired_count: 5
@@ -24,9 +24,9 @@ Layers:
     padding: 1
     threshold: 1
 
-  dropout_1:
-    type: "dropout"
-    p: 0.2
+    #dropout_1:
+    #type: "dropout"
+    #p: 0.2
 
   conv_2:
     type: "conv" # 32*32  28*28
@@ -42,9 +42,9 @@ Layers:
     kernel_size: 2
     threshold: 0.5
 
-  dropout_2:
-    type: "dropout"
-    p: 0.2
+    #dropout_2:
+    #type: "dropout"
+    #p: 0.2
 
   conv_3:
     type: "conv" # 16*16  14*14
