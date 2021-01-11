@@ -5,7 +5,7 @@ Network:
   dataset: "CIFAR10"
   data_path: "../../datasets/cifar10"
   rule: "TSSLBP"
-  lr: 0.0005
+  lr: 0.0002
   loss: "kernel"
   n_class: 10
   desired_count: 5
@@ -93,7 +93,7 @@ Layers:
   FC_1:
     type: "linear"
     n_inputs: 16384
-    n_outputs: 1024
+    n_outputs: 2048
     weight_scale: 1
     threshold: 1
 
@@ -103,8 +103,8 @@ Layers:
 
   FC_2:
     type: "linear"
-    n_inputs: 1024
-    n_outputs: 2048
+    n_inputs: 2048
+    n_outputs: 1024
     weight_scale: 1
     threshold: 1
 
@@ -114,7 +114,7 @@ Layers:
 
   output:
     type: "linear"
-    n_inputs: 2048
+    n_inputs: 1024
     n_outputs: 10
     weight_scale: 1
     threshold: 1

@@ -12,9 +12,11 @@ def get_mnist(data_path, network_config):
     batch_size = network_config['batch_size']
 
     transform_train = transforms.Compose([
-        # transforms.RandomCrop(28, padding=4),
+        transforms.RandomCrop(28, padding=4),
         # transforms.RandomHorizontalFlip(),
-        # transforms.RandomRotation(30),
+        transforms.RandomRotation(15),
+        #transforms.RandomResizedCrop(28, scale=(0.8, 1.0), ratio=(0.75,\
+        #    1.3333333333333333), interpolation=2),
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
