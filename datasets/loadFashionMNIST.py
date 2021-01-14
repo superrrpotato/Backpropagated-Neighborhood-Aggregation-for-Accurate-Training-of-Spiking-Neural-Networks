@@ -10,9 +10,9 @@ def get_fashionmnist(data_path, network_config):
         os.mkdir(data_path)
     batch_size = network_config['batch_size']
     transform_train = transforms.Compose([
-        # transforms.RandomCrop(28),
-        # transforms.RandomHorizontalFlip(),
-        # transforms.RandomRotation(degrees=20),
+        transforms.RandomCrop(28, padding = 4),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(degrees=5),
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])

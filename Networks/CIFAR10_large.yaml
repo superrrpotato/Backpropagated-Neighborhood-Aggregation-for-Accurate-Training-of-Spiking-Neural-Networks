@@ -5,7 +5,7 @@ Network:
   dataset: "CIFAR10"
   data_path: "../../datasets/cifar10"
   rule: "TSSLBP"
-  lr: 0.0005
+  lr: 0.0002
   loss: "kernel"
   n_class: 10
   desired_count: 5
@@ -20,7 +20,7 @@ Layers:
     in_channels: 3
     out_channels: 128
     kernel_size: 3
-    weight_scale: 0.7
+    weight_scale: 5
     padding: 1
     threshold: 1
 
@@ -33,7 +33,7 @@ Layers:
     in_channels: 128
     out_channels: 256
     kernel_size: 3
-    weight_scale: 0.9
+    weight_scale: 5
     padding: 1
     threshold: 1
 
@@ -51,7 +51,7 @@ Layers:
     in_channels: 256
     out_channels: 512
     kernel_size: 3
-    weight_scale: 0.9
+    weight_scale: 5
     padding: 1
     threshold: 1
 
@@ -69,7 +69,7 @@ Layers:
     in_channels: 512
     out_channels: 1024
     kernel_size: 3
-    weight_scale: 0.9
+    weight_scale: 5
     padding: 1
     threshold: 1
 
@@ -82,7 +82,7 @@ Layers:
     in_channels: 1024
     out_channels: 512
     kernel_size: 3
-    weight_scale: 3
+    weight_scale: 5
     padding: 1
     threshold: 1
 
@@ -94,7 +94,7 @@ Layers:
     type: "linear"
     n_inputs: 32768
     n_outputs: 2048
-    weight_scale: 4
+    weight_scale: 1
     threshold: 1
 
   dropout_6:
@@ -105,7 +105,7 @@ Layers:
     type: "linear"
     n_inputs: 2048
     n_outputs: 1024
-    weight_scale: 5
+    weight_scale: 1
     threshold: 1
 
   dropout_7:
@@ -116,6 +116,6 @@ Layers:
     type: "linear"
     n_inputs: 1024
     n_outputs: 10
-    weight_scale: 10
+    weight_scale: 1
     threshold: 1
 
