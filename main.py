@@ -2,7 +2,8 @@ import os
 
 import torch
 from network_parser import parse
-from datasets import loadMNIST, loadCIFAR10, loadFashionMNIST, loadNMNIST_Spiking
+from datasets import loadMNIST, loadCIFAR10, loadFashionMNIST,\
+loadNMNIST_Spiking, loadCIFAR10_DVS
 import logging
 import cnns
 from utils import learningStats
@@ -196,7 +197,7 @@ if __name__ == '__main__':
 
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = 1#torch.device("cuda")
+        device = 0#torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
@@ -218,6 +219,10 @@ if __name__ == '__main__':
     elif params['Network']['dataset'] == "CIFAR10":
         data_path = os.path.expanduser(params['Network']['data_path'])
         train_loader, test_loader = loadCIFAR10.get_cifar10(data_path, params['Network'])
+    elif params['Network']['dataset'] == "CIFAR10_DVS":
+        data_path = os.path.expanduser("../../datasets/CIFAR10_DVS")
+        train_loader, test_loader = loadCIFAR10_DVS.get_cifar10_dvs(data_path,\
+                params['Network'])
     else:
         raise Exception('Unrecognized dataset name.')
     logging.info("dataset loaded")

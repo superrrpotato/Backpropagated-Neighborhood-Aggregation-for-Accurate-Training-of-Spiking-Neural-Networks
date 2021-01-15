@@ -43,6 +43,10 @@ Layers:
     kernel_size: 2
     threshold: 0.5
 
+  dropout_1:
+    type: "dropout"
+    p: 0.2
+
   output:
     type: "linear"
     n_inputs: 2304
