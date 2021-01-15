@@ -60,7 +60,8 @@ class TSSLBP(torch.autograd.Function):
         projects = nb.get_projects_simplified(outputs, u, name, syns_posts, grad_delta)
         projects = projects.T.view(shape)
         lamda_u = 0.2
-        dist_aggregate_factor = lamda_u / ((u-threshold)**2 + lamda_u)
+        near = (torch.abs(u-threshold) < 1).type(torch.float)
+        dist_aggregate_factor = near * lamda_u / ((u-threshold)**2 + lamda_u)
         #m = torch.nn.Softmax(dim=-1)
         #dist_aggregate_factor = m(dist_aggregate_factor)
         #grad = grad_delta * dist_aggregate_factor
