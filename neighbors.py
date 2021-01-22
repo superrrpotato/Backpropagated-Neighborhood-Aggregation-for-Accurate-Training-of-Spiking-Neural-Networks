@@ -63,6 +63,55 @@ def sigmoid(x, temp):
     exp = torch.clamp(-x/temp, -10, 10)
     return 1 / (1 + torch.exp(exp))
 
+def get_projects(outputs, u, name, syns_posts, grad_delta):
+    tau_m = glv.tau_m
+    m_decay = (1 - 1 / tau_m)
+    tau_s = glv.tau_s
+    theta_s = 1/tau_s
+    shape = outputs.shape
+    time_steps = glv.n_steps
+    neuron_num = shape[0] * shape[1] * shape[2] * shape[3]
+    outputs = outputs.view(neuron_num, shape[4])
+    u = u.view(neuron_num, shape[4])
+    threshold = 1
+    projects = []
+    for t in range(time_steps):
+        neighbor_output = outputs > 0
+        S0 = (neighbor_output[:, t]).float()
+        flip = torch.ones(neuron_num, dtype=torch.bool, device=glv.device)
+        neighbor_output[:, t] = neighbor_output[:, t] ^ flip
+        U_2 = u[:, t]
+        u[:, t] = 1
+        current_t = t+1
+        if current_t == time_steps:
+            flip[:] = False
+        while flip.any() == True:
+            U_1 = u[:, current_t]
+            u[:,current_t] = u[:,current_t] + S0 * u[:, current_t-1] * m_decay\
+                    + (1-S0) * (-U_2) * m_decay
+            U_2 = U_1
+            flip = flip & ((u[:,current_t]>1)^neighbor_output[:,current_t])
+            neighbor_output[:, current_t] = neighbor_output[:, current_t] ^ flip
+            current_t += 1
+            if current_t == time_steps:
+                flip[:] = False
+        neighbor_output = neighbor_output.type(glv.dtype)
+        neighbor_syns_posts = []
+        syn = torch.zeros(neuron_num, dtype=glv.dtype, device=glv.device)
+        for i in range(time_steps):
+            syn = syn + (neighbor_output[:, i] - syn) * theta_s
+            neighbor_syns_posts.append(syn)
+        neighbor_syns_posts = torch.stack(neighbor_syns_posts, dim = 1)
+        syns_posts = syns_posts.reshape(neuron_num, time_steps)
+        grad_delta = grad_delta.reshape(neuron_num, time_steps)
+        delta_syns_posts = neighbor_syns_posts - syns_posts
+        dot_product = torch.sum(delta_syns_posts * (- grad_delta), dim = -1)
+        d_syns_norm = torch.sqrt(torch.sum(delta_syns_posts * delta_syns_posts,\
+            dim = -1))
+        projects += [dot_product/(d_syns_norm+0.00001)]# * grad_d_norm 
+    projects = torch.stack(projects, dim=0)
+    return projects
+
 def get_projects_simplified(outputs, u, name, syns_posts, grad_delta):
     tau_m = glv.tau_m
     m_decay = (1 - 1 / tau_m)

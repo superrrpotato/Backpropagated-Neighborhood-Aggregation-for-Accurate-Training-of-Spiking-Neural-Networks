@@ -55,9 +55,9 @@ class TSSLBP(torch.autograd.Function):
         tau_s = others[1].item()
         theta_m = others[2].item()
         name = others[3].item()
-        
+
         # projects = nb.get_projects(outputs, u, name, syns_posts, grad_delta)
-        projects = nb.get_projects_simplified(outputs, u, name, syns_posts, grad_delta)
+        projects = nb.get_projects(outputs, u, name, syns_posts, grad_delta)
         projects = projects.T.view(shape)
         lamda_u = 5
         near = 1.#(torch.abs(u-threshold) < 0.85).type(torch.float)
