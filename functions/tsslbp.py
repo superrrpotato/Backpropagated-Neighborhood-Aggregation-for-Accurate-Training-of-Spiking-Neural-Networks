@@ -40,14 +40,14 @@ class TSSLBP(torch.autograd.Function):
         outputs = torch.stack(outputs, dim = 4)
         syns_posts = torch.stack(syns_posts, dim = 4)
         layer_index = glv.layers_name.index(name)
-        ctx.save_for_backward(mem_updates, outputs, mems, syns_posts,\
+        ctx.save_for_backward(mem_updates, outputs, mems, syns_posts, inputs,\
                 torch.tensor([threshold, tau_s, theta_m, layer_index]))
 
         return syns_posts
 
     @staticmethod
     def backward(ctx, grad_delta):
-        (delta_u, outputs, u, syns_posts, others) = ctx.saved_tensors
+        (delta_u, outputs, u, syns_posts, inputs, others) = ctx.saved_tensors
         shape = grad_delta.shape
         neuron_num = shape[0] * shape[1] * shape[2] * shape[3]
         n_steps = shape[4]
@@ -57,12 +57,12 @@ class TSSLBP(torch.autograd.Function):
         name = others[3].item()
 
         # projects = nb.get_projects(outputs, u, name, syns_posts, grad_delta)
-        projects = nb.get_projects(outputs, u.clone(), name, syns_posts, grad_delta)
+        projects = nb.get_loss(outputs, u.clone(), name, syns_posts,\
+                grad_delta, inputs)
         projects = projects.T.view(shape)
         #std = torch.std(u-threshold)
         #lamda_u = 0.001# std * 0.1
-        dist_aggregate_factor = torch.clamp(1. / ((threshold-u) +\
-            1e-6*(2*(threshold>u).float()-0.5)), -10,10)
+        dist_aggregate_factor = torch.clamp(1. / (threshold-u), -10,10)
         #m = torch.nn.Softmax(dim=-1)
         #dist_aggregate_factor = m(dist_aggregate_factor)
         #grad = grad_delta * dist_aggregate_factor

@@ -63,6 +63,45 @@ def sigmoid(x, temp):
     exp = torch.clamp(-x/temp, -10, 10)
     return 1 / (1 + torch.exp(exp))
 
+def get_loss(outputs, u, name, syns_posts, grad_delta, inputs):
+    tau_m = glv.tau_m
+    theta_m  = 1/tau_m
+    tau_s = glv.tau_s
+    theta_s = 1/tau_s
+    time_steps = glv.n_steps
+    shape = outputs.shape
+    threshold = 1
+    neuron_num = shape[0] * shape[1] * shape[2] * shape[3]
+    outputs = outputs.view(neuron_num, shape[4])
+    u = u.view(neuron_num, shape[4])
+    inputs = inputs.reshape(neuron_num, shape[4])
+    syns_posts = syns_posts.reshape(neuron_num, time_steps)
+    grad_delta = grad_delta.reshape(neuron_num, time_steps)
+    syn_temp = torch.zeros(neuron_num, dtype=glv.dtype, device=glv.device)
+    loss = []
+    for t in range(time_steps):
+        if t>0:
+            syn_temp = syns_posts[:, t-1]
+        new_output = outputs.clone()
+        syn = syns_posts.clone()
+        new_output[:, t] = 1 - new_output[:, t]
+        syn[:, t] = syn_temp + (new_output[:, t] - syn_temp) * theta_s
+        u[:, t] = 1.
+        mem = u[:, t]
+        for t_1 in range(t+1,time_steps):
+            mem_update = (-theta_m) * mem + inputs[:, t_1]
+            mem += mem_update
+            out = mem > threshold
+            out = out.type(glv.dtype)
+            mem = mem * (1-out)
+            new_output[:, t_1] = out
+            syn[:, t_1] = syn[:, t_1] + (out - syn[:, t_1]) * theta_s
+        delta_syns_posts = syn - syns_posts
+        dot_product = torch.sum(delta_syns_posts * grad_delta, dim = -1)
+        loss += [dot_product]
+    loss = torch.stack(loss, dim=0)
+    return loss
+
 def get_projects(outputs, u, name, syns_posts, grad_delta):
     tau_m = glv.tau_m
     m_decay = (1 - 1 / tau_m)
