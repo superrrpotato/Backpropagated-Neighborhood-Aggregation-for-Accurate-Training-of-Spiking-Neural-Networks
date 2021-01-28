@@ -106,9 +106,10 @@ def get_projects(outputs, u, name, syns_posts, grad_delta):
         grad_delta = grad_delta.reshape(neuron_num, time_steps)
         delta_syns_posts = neighbor_syns_posts - syns_posts
         dot_product = torch.sum(delta_syns_posts * (- grad_delta), dim = -1)
-        d_syns_norm = torch.sqrt(torch.sum(delta_syns_posts * delta_syns_posts,\
-            dim = -1))
-        projects += [dot_product/(d_syns_norm+0.00001)]# * grad_d_norm 
+        #d_syns_norm = torch.sqrt(torch.sum(delta_syns_posts * delta_syns_posts,\
+        #    dim = -1))
+        projects += [dot_product]
+        #[dot_product/(d_syns_norm+0.00001)]# * grad_d_norm 
     projects = torch.stack(projects, dim=0)
     return projects
 

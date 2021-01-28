@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = 3#torch.device("cuda")
+        device = 0#torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
@@ -235,9 +235,10 @@ if __name__ == '__main__':
         net.load_state_dict(checkpoint['net'])
 
     error = loss_f.SpikeLoss(params['Network']).to(device)
-    optimizer = torch.optim.AdamW(net.get_parameters(), lr=params['Network']['lr'], betas=(0.9, 0.999))
+    optimizer = torch.optim.AdamW(net.get_parameters(),\
+            lr=params['Network']['lr'], betas=(0.9, 0.999))
     #optimizer = torch.optim.SGD(net.get_parameters(), lr=\
-    #       params['Network']['lr'] *50, momentum=0.9)
+    #       params['Network']['lr'] *100, momentum=0.9)
     best_acc = 0
     best_epoch = 0
     
