@@ -12,7 +12,7 @@ from utils import EarlyStopping
 import functions.loss_f as loss_f
 import numpy as np
 from datetime import datetime
-import pycuda.driver as cuda
+#import pycuda.driver as cuda
 from torch.nn.utils import clip_grad_norm_
 from torch.nn.utils import clip_grad_value_
 import global_v as glv
