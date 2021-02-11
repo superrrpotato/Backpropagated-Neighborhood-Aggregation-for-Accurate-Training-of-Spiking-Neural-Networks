@@ -53,7 +53,7 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
     for batch_idx, (inputs, labels) in enumerate(trainloader):
         start_time = datetime.now()
         targets = torch.zeros((labels.shape[0], n_class, 1, 1, n_steps), dtype=dtype).to(device)
-        if network_config["rule"] == "TSSLBP":
+        if network_config["rule"] == "NA":
             if len(inputs.shape) < 5:
                 inputs = inputs.unsqueeze_(-1).repeat(1, 1, 1, 1, n_steps)
             # forward pass
@@ -130,7 +130,7 @@ def test(network, testloader, epoch, states, network_config, layers_config, earl
     with torch.no_grad():
         # for batch_idx, (inputs, labels) in enumerate(track(testloader, description=des_str, auto_refresh=False)):
         for batch_idx, (inputs, labels) in enumerate(testloader):
-            if network_config["rule"] == "TSSLBP":
+            if network_config["rule"] == "NA":
                 if len(inputs.shape) < 5:
                     inputs = inputs.unsqueeze_(-1).repeat(1, 1, 1, 1, n_steps)
                 # forward pass
@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = 1 #torch.device("cuda")
+        device = 1#torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     l_states = learningStats()
     early_stopping = EarlyStopping()
     my_lr_scheduler =\
-        torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.99)
+        torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.985)
     for e in range(params['Network']['epochs']):
         l_states.training.reset()
         train(net, train_loader, optimizer, e, l_states, params['Network'], params['Layers'], error)

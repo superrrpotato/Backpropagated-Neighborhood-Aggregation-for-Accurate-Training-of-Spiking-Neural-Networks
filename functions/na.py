@@ -5,7 +5,7 @@ from time import time
 import global_v as glv
 import neighbors as nb
 
-class TSSLBP(torch.autograd.Function):
+class NA(torch.autograd.Function):
     @staticmethod
     def forward(ctx, inputs, network_config, layer_config, name):
         shape = inputs.shape
@@ -55,42 +55,25 @@ class TSSLBP(torch.autograd.Function):
         tau_s = others[1].item()
         theta_m = others[2].item()
         name = others[3].item()
-
-        # projects = nb.get_projects(outputs, u, name, syns_posts, grad_delta)
+        # Trick 2-reduce farther neighbors' impact (best setting)
+        projects = nb.get_projects(outputs, u, name, syns_posts, grad_delta)
+        projects = projects.T.view(shape)
+        dist_aggregate_factor = 0.2/((u-threshold)**2 + 0.2)
+        grad = projects * (outputs - 0.5) * 2 * dist_aggregate_factor
+        # Trick 1-simple clippiing
+        """
         projects = nb.get_loss(outputs, u.clone(), name, syns_posts,\
                 grad_delta, inputs)
         projects = projects.T.view(shape)
-        #std = torch.std(u-threshold)
-        #lamda_u = 0.001# std * 0.1
-        dist_aggregate_factor = torch.clamp(1. / (threshold-u), -10,10)
-        #m = torch.nn.Softmax(dim=-1)
-        #dist_aggregate_factor = m(dist_aggregate_factor)
-        #grad = grad_delta * dist_aggregate_factor
-        grad = projects * dist_aggregate_factor#sig_grad
+        dist_aggregate_factor = torch.clamp(1 /(threshold-u), -10,10)
+        grad = projects * dist_aggregate_factor
+        """
+        # Grad norm normalize
         nb.update_norm(grad, name)
-        
+
         mean = torch.mean(torch.abs(grad))
         last_norm = glv.grad_norm_dict[glv.last_layer_name]
-        #grad = grad/mean * last_norm * torch.log(mean/last_norm + 1.1)
         grad = grad * torch.log(last_norm/(mean+0.00001) + 1.02) * 1.2
         nb.update_norm(grad, name)
-        
 
-        """
-        grad = torch.zeros_like(grad_delta)
-        syn_a = glv.syn_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
-        for t in range(n_steps):
-            # time_end = int(min(t+tau_s, n_steps))
-            time_end = n_steps
-            time_len = time_end-t
-            grad_a = torch.sum(syn_a[..., 0:time_len]*grad_delta[..., t:time_end], dim=-1)
-
-            a = 0.2
-            f = torch.clamp((-1 * u[..., t] + threshold) / a, -8, 8)
-            f = torch.exp(f)
-            f = f / ((1 + f) * (1 + f) * a)
-
-            grad[..., t] = grad_a * f
-        #grad = grad + grad_n
-        """
         return grad, None, None, None

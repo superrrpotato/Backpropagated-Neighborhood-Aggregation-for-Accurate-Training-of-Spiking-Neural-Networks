@@ -3,7 +3,7 @@ Network:
   batch_size: 64
   n_steps: 5
   dataset: "MNIST"
-  rule: "TSSLBP"
+  rule: "NA"
   data_path: "../../datasets/mnist"
   lr: 0.0005
   loss: "kernel"

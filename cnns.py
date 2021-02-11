@@ -48,7 +48,7 @@ class Network(nn.Module):
             if self.layers[i].type == "dropout":
                 if is_train:
                     spikes = self.layers[i](spikes)
-            elif self.network_config["rule"] == "TSSLBP":
+            elif self.network_config["rule"] == "NA":
                 spikes = self.layers[i].forward_pass(spikes, epoch)
             else:
                 raise Exception('Unrecognized rule type. It is: {}'.format(self.network_config['rule']))

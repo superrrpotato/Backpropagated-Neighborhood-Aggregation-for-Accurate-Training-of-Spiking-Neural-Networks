@@ -4,7 +4,7 @@ Network:
   n_steps: 5
   dataset: "CIFAR10"
   data_path: "../../datasets/cifar10"
-  rule: "TSSLBP"
+  rule: "NA"
   lr: 0.0005
   loss: "kernel"
   n_class: 10

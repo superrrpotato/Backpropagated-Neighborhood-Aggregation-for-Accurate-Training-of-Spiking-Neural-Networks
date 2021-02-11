@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as f
 import torch.nn.init as init
-import functions.tsslbp as tsslbp
+import functions.na as na
 import global_v as glv
 
 
@@ -60,7 +60,7 @@ class LinearLayer(nn.Linear):
 
     def forward_pass(self, x, epoch):
         y = self.forward(x)
-        y = tsslbp.TSSLBP.apply(y, self.network_config, self.layer_config,\
+        y = na.NA.apply(y, self.network_config, self.layer_config,\
                 self.name)
         return y
 
