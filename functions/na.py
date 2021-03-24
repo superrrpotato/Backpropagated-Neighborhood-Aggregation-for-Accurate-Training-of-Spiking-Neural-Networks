@@ -55,25 +55,45 @@ class NA(torch.autograd.Function):
         tau_s = others[1].item()
         theta_m = others[2].item()
         name = others[3].item()
+        """
+        grad = torch.zeros_like(grad_delta)
+        syn_a = glv.syn_a.repeat(shape[0], shape[1], shape[2], shape[3], 1)
+        for t in range(n_steps):
+            # time_end = int(min(t+tau_s, n_steps))
+            time_end = n_steps
+            time_len = time_end-t
+            grad_a = torch.sum(syn_a[..., 0:time_len]*grad_delta[..., t:time_end], dim=-1)
+            a = 0.2
+            f = torch.clamp((-1 * u[..., t] + threshold) / a, -8, 8)
+            f = torch.exp(f)
+            f = f / ((1 + f) * (1 + f) * a)
+            grad[..., t] = grad_a * f
+        for t in range(n_steps-2,-1,-1):
+            grad[..., t] += grad[..., t+1] * 0.8 * (1-outputs[..., t+1])
+        """
+        """
         # Trick 2-reduce farther neighbors' impact (best setting)
-        projects = nb.get_projects(outputs, u, name, syns_posts, grad_delta)
+        projects = nb.get_projects_discrete(outputs, u, name, syns_posts, grad_delta)
         projects = projects.T.view(shape)
         dist_aggregate_factor = 0.2/((u-threshold)**2 + 0.2)
         grad = projects * (outputs - 0.5) * 2 * dist_aggregate_factor
         # Trick 1-simple clippiing
         """
+        
         projects = nb.get_loss(outputs, u.clone(), name, syns_posts,\
                 grad_delta, inputs)
         projects = projects.T.view(shape)
         dist_aggregate_factor = torch.clamp(1 /(threshold-u), -10,10)
         grad = projects * dist_aggregate_factor
-        """
+        
+        
         # Grad norm normalize
         nb.update_norm(grad, name)
 
-        mean = torch.mean(torch.abs(grad))
-        last_norm = glv.grad_norm_dict[glv.last_layer_name]
+        mean = torch.mean(torch.abs(grad)) # mean
+        last_norm = glv.grad_norm_dict[glv.last_layer_name] # last layer norm
+        #grad = grad  * 2.71828 ** (-1*(m**(1/2)-l**(1/2))/(m**(1/2)+l*(1/2)))
         grad = grad * torch.log(last_norm/(mean+0.00001) + 1.02) * 1.2
         nb.update_norm(grad, name)
-
+        
         return grad, None, None, None

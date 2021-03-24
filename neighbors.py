@@ -86,8 +86,7 @@ def get_loss(outputs, u, name, syns_posts, grad_delta, inputs):
         syn = syns_posts.clone()
         new_output[:, t] = 1 - new_output[:, t]
         syn[:, t] = syn_temp + (new_output[:, t] - syn_temp) * theta_s
-        u[:, t] = 1.
-        mem = u[:, t]
+        mem = 1. - new_output[:, t].type(glv.dtype)
         for t_1 in range(t+1,time_steps):
             mem_update = (-theta_m) * mem + inputs[:, t_1]
             mem += mem_update
@@ -95,7 +94,7 @@ def get_loss(outputs, u, name, syns_posts, grad_delta, inputs):
             out = out.type(glv.dtype)
             mem = mem * (1-out)
             new_output[:, t_1] = out
-            syn[:, t_1] = syn[:, t_1] + (out - syn[:, t_1]) * theta_s
+            syn[:, t_1] = syn[:, t_1-1] + (out - syn[:, t_1-1]) * theta_s
         delta_syns_posts = syn - syns_posts
         dot_product = torch.sum(delta_syns_posts * grad_delta, dim = -1)
         loss += [dot_product]#/(d_syns_norm+0.00001)]
