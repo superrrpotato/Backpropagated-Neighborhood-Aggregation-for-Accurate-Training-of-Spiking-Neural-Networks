@@ -83,13 +83,12 @@ class NA(torch.autograd.Function):
         projects = nb.get_loss(outputs, u.clone(), name, syns_posts,\
                 grad_delta, inputs)
         projects = projects.T.view(shape)
-        dist_aggregate_factor = torch.clamp(1 /(threshold-u), -10,10)
+        dist_aggregate_factor = torch.clamp(1 /(threshold-u)**3, -1,1)
         grad = projects * dist_aggregate_factor
-        
         
         # Grad norm normalize
         nb.update_norm(grad, name)
-
+        
         mean = torch.mean(torch.abs(grad)) # mean
         last_norm = glv.grad_norm_dict[glv.last_layer_name] # last layer norm
         #grad = grad  * 2.71828 ** (-1*(m**(1/2)-l**(1/2))/(m**(1/2)+l*(1/2)))

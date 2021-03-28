@@ -86,7 +86,7 @@ def get_loss(outputs, u, name, syns_posts, grad_delta, inputs):
         syn = syns_posts.clone()
         new_output[:, t] = 1 - new_output[:, t]
         syn[:, t] = syn_temp + (new_output[:, t] - syn_temp) * theta_s
-        mem = 1. - new_output[:, t].type(glv.dtype)
+        mem = threshold * outputs[:, t].type(glv.dtype)
         for t_1 in range(t+1,time_steps):
             mem_update = (-theta_m) * mem + inputs[:, t_1]
             mem += mem_update

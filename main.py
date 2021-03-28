@@ -16,6 +16,7 @@ import pycuda.driver as cuda
 from torch.nn.utils import clip_grad_norm_
 from torch.nn.utils import clip_grad_value_
 import global_v as glv
+import torch.nn.functional as F
 
 from sklearn.metrics import confusion_matrix
 import pandas as pd
@@ -39,7 +40,6 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
     n_class = network_config['n_class']
     batch_size = network_config['batch_size']
     time = datetime.now()
-
     if network_config['loss'] == "kernel":
         # set target signal
         #if n_steps >= 10:
@@ -63,7 +63,6 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
             outputs = network.forward(inputs, epoch, True)
             # print("time cost forward:")
             # print(round((datetime.now() - start_time).total_seconds(), 2))
-
             if network_config['loss'] == "count":
                 # set target signal
                 desired_count = network_config['desired_count']
@@ -72,7 +71,19 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
                 targets = torch.ones((outputs.shape[0], outputs.shape[1], 1, 1), dtype=dtype).to(device) * undesired_count
                 for i in range(len(labels)):
                     targets[i, labels[i], ...] = desired_count
-                loss = err.spike_count(outputs, targets, network_config, layers_config[list(layers_config.keys())[-1]])
+                loss = err.spike_count(outputs, targets, network_config,\
+                        layers_config[list(layers_config.keys())[-1]])
+            elif network_config['loss'] == "one_hot":
+                targets.zero_()
+                for i in range(len(labels)):
+                    desired_spikes = F.one_hot(torch.tensor(labels[i]),\
+                            num_classes=10).type(glv.dtype).to(glv.device)
+                    desired_spikes = desired_spikes.view(1, 1, 1, 1, n_steps)#.to(device)
+                    desired_spikes = loss_f.psp(desired_spikes,\
+                            network_config).view(1, 1, 1, n_steps)
+                    desired_spikes = desired_spikes.repeat(10,1,1,1)
+                    targets[i, ...] = desired_spikes
+                loss = err.spike_kernel(outputs, targets, network_config)
             elif network_config['loss'] == "kernel":
                 targets.zero_()
                 for i in range(len(labels)):
@@ -94,6 +105,10 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
 
             spike_counts = torch.sum(outputs, dim=4).squeeze_(-1).squeeze_(-1).detach().cpu().numpy()
             predicted = np.argmax(spike_counts, axis=1)
+            if network_config['loss'] == "one_hot":
+                    spike_counts = torch.sum(outputs,
+                            dim=1).squeeze_(-2).squeeze_(-2).detach().cpu().numpy()
+                    predicted = np.argmax(spike_counts, axis=-1) 
             train_loss += torch.sum(loss).item()
             labels = labels.cpu().numpy()
             total += len(labels)
@@ -140,6 +155,10 @@ def test(network, testloader, epoch, states, network_config, layers_config, earl
 
                 spike_counts = torch.sum(outputs, dim=4).squeeze_(-1).squeeze_(-1).detach().cpu().numpy()
                 predicted = np.argmax(spike_counts, axis=1)
+                if network_config['loss'] == "one_hot":
+                    spike_counts = torch.sum(outputs,
+                            dim=1).squeeze_(-2).squeeze_(-2).detach().cpu().numpy()
+                    predicted = np.argmax(spike_counts, axis=-1)
                 labels = labels.cpu().numpy()
                 y_pred.append(predicted)
                 y_true.append(labels)
@@ -197,7 +216,7 @@ if __name__ == '__main__':
 
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = 2#torch.device("cuda")
+        device = 0#torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
