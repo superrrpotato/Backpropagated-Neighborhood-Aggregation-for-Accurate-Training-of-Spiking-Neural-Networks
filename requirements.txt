@@ -3,7 +3,7 @@ torchvision
 numpy
 matplotlib
 tqdm
-yaml
+PyYAML
 pandas
 pycuda
 seaborn
