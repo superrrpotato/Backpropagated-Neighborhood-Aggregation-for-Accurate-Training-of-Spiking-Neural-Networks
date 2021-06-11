@@ -79,11 +79,12 @@ class NA(torch.autograd.Function):
         grad = projects * (outputs - 0.5) * 2 * dist_aggregate_factor
         # Trick 1-simple clippiing
         """
-        
+        for t in range(n_steps-2,-1,-1):
+            grad_delta[..., t] += grad_delta[..., t+1] * (1-1/tau_s)
         projects = nb.get_loss(outputs, u.clone(), name, syns_posts,\
                 grad_delta, inputs)
         projects = projects.T.view(shape)
-        dist_aggregate_factor = torch.clamp(1 /(threshold-u)**3, -1,1)
+        dist_aggregate_factor = torch.clamp(1 /(threshold-u)**3, -5,5)
         grad = projects * dist_aggregate_factor
         
         # Grad norm normalize
