@@ -3,7 +3,7 @@
 This repository is the official implementation of Backpropagated Neighborhood Aggregation for Accurate Training of Spiking Neural Networks
 (Modified from TSSL-BP)
 
-![Poster](./Poster-1 2.png)
+<img src="Poster-1 2.png" alt="Poster" width="800"/>
 
 ## Requirements
 ### Dependencies and Libraries
