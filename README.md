@@ -8,19 +8,13 @@ This repository is the official implementation of Backpropagated Neighborhood Ag
 
 ```bibtex
 
-@InProceedings{pmlr-v139-yang21n,
-  title = 	 {Backpropagated Neighborhood Aggregation for Accurate Training of Spiking Neural Networks},
-  author =       {Yang, Yukun and Zhang, Wenrui and Li, Peng},
-  booktitle = 	 {Proceedings of the 38th International Conference on Machine Learning},
-  pages = 	 {11852--11862},
-  year = 	 {2021},
-  editor = 	 {Meila, Marina and Zhang, Tong},
-  volume = 	 {139},
-  series = 	 {Proceedings of Machine Learning Research},
-  month = 	 {18--24 Jul},
-  publisher =    {PMLR},
-  pdf = 	 {http://proceedings.mlr.press/v139/yang21n/yang21n.pdf},
-  url = 	 {http://proceedings.mlr.press/v139/yang21n.html},
+@inproceedings{yang2021backpropagated,
+  title={Backpropagated Neighborhood Aggregation for Accurate Training of Spiking Neural Networks},
+  author={Yang, Yukun and Zhang, Wenrui and Li, Peng},
+  booktitle={International Conference on Machine Learning},
+  pages={11852--11862},
+  year={2021},
+  organization={PMLR}
 }
 
 ```
