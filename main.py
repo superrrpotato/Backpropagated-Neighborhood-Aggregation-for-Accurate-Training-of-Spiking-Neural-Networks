@@ -23,7 +23,8 @@ import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
 import argparse
-
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
 
 max_accuracy = 0
 min_loss = 1000
@@ -120,7 +121,11 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
         states.training.numSamples = total
         states.training.lossSum += loss.cpu().data.item()
         states.print(epoch, batch_idx, (datetime.now() - time).total_seconds())
-
+    writer.add_scalar("Loss/train", states.training.lossSum\
+            /states.training.numSamples, epoch)
+    writer.add_scalar("Acc/train", 100.*states.training.correctSamples\
+            /states.training.numSamples,epoch)
+    writer.flush()
     total_accuracy = correct / total
     total_loss = train_loss / total
     if total_accuracy > max_accuracy:
@@ -131,7 +136,7 @@ def train(network, trainloader, opti, epoch, states, network_config, layers_conf
     logging.info("Train Accuracy: %.3f (%.3f). Loss: %.3f (%.3f)\n", 100. * total_accuracy, 100 * max_accuracy, total_loss, min_loss)
 
 
-def test(network, testloader, epoch, states, network_config, layers_config, early_stopping):
+def test(network, testloader, epoch, states, network_config, layers_config, early_stopping, err):
     global best_acc
     global best_epoch
     correct = 0
@@ -144,6 +149,9 @@ def test(network, testloader, epoch, states, network_config, layers_config, earl
     des_str = "Testing @ epoch " + str(epoch)
     with torch.no_grad():
         # for batch_idx, (inputs, labels) in enumerate(track(testloader, description=des_str, auto_refresh=False)):
+        desired_spikes = torch.ones(n_steps, dtype=glv.dtype, device=glv.device)
+        desired_spikes = desired_spikes.view(1, 1, 1, 1, n_steps)
+        desired_spikes = loss_f.psp(desired_spikes, network_config).view(1, 1, 1, n_steps)
         for batch_idx, (inputs, labels) in enumerate(testloader):
             if network_config["rule"] == "NA":
                 if len(inputs.shape) < 5:
@@ -152,13 +160,16 @@ def test(network, testloader, epoch, states, network_config, layers_config, earl
                 labels = labels.to(device)
                 inputs = inputs.to(device)
                 outputs = network.forward(inputs, epoch, False)
-
+                targets = torch.zeros((labels.shape[0], n_class, 1, 1, n_steps), dtype=dtype, device=glv.device)
+                for i in range(len(labels)):
+                    targets[i, labels[i], ...] = desired_spikes
                 spike_counts = torch.sum(outputs, dim=4).squeeze_(-1).squeeze_(-1).detach().cpu().numpy()
                 predicted = np.argmax(spike_counts, axis=1)
                 if network_config['loss'] == "one_hot":
                     spike_counts = torch.sum(outputs,
                             dim=1).squeeze_(-2).squeeze_(-2).detach().cpu().numpy()
                     predicted = np.argmax(spike_counts, axis=-1)
+                loss = err.spike_kernel(outputs, targets, network_config)
                 labels = labels.cpu().numpy()
                 y_pred.append(predicted)
                 y_true.append(labels)
@@ -166,11 +177,14 @@ def test(network, testloader, epoch, states, network_config, layers_config, earl
                 correct += (predicted == labels).sum().item()
             else:
                 raise Exception('Unrecognized rule name.')
-
+            states.testing.lossSum += loss.cpu().data.item()
             states.testing.correctSamples += (predicted == labels).sum().item()
             states.testing.numSamples = total
             states.print(epoch, batch_idx, (datetime.now() - time).total_seconds())
-
+    writer.add_scalar("Loss/test",states.testing.lossSum\
+            /states.testing.numSamples, epoch)
+    writer.add_scalar("Acc/test", 100.*correct/total, epoch)
+    writer.flush()
     test_accuracy = correct / total
     if test_accuracy > best_acc:
         best_acc = test_accuracy
@@ -213,10 +227,11 @@ if __name__ == '__main__':
     logging.info("finish parsing settings")
 
     dtype = torch.float32
-
+    lr = 1e-5
+    betas = (0,0.999)
     # Check whether a GPU is available
     if torch.cuda.is_available():
-        device = 2#torch.device("cuda")
+        device = 0#torch.device("cuda")
         cuda.init()
         c_device = aboutCudaDevices()
         print(c_device.info())
@@ -255,7 +270,7 @@ if __name__ == '__main__':
 
     error = loss_f.SpikeLoss(params['Network']).to(device)
     optimizer = torch.optim.AdamW(net.get_parameters(),\
-            lr=params['Network']['lr'], betas=(0.9, 0.999))
+            lr=lr, betas=betas)
     #optimizer = torch.optim.SGD(net.get_parameters(), lr=\
     #       params['Network']['lr'] *100, momentum=0.9)
     best_acc = 0
@@ -271,7 +286,7 @@ if __name__ == '__main__':
         l_states.training.update()
         my_lr_scheduler.step()
         l_states.testing.reset()
-        test(net, test_loader, e, l_states, params['Network'], params['Layers'], early_stopping)
+        test(net, test_loader, e, l_states, params['Network'], params['Layers'], early_stopping, error)
         l_states.testing.update()
         # if early_stopping.early_stop:
         #     break
