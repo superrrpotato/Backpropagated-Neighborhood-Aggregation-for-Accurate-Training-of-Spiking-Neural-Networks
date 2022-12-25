@@ -38,9 +38,9 @@ NMNIST: [dataset](https://www.garrickorchard.com/datasets/n-mnist), [preprocessi
 
 ## Training
 ### Before running
-Modify the data path and network settings in the [config files](https://github.com/stonezwr/TSSL-BP/tree/master/Networks). 
+Modify the data path and network settings in the [config files](https://github.com/superrrpotato/Backpropagated-Neighborhood-Aggregation-for-Accurate-Training-of-Spiking-Neural-Networks/tree/master/Networks). 
 
-Select the index of GPU in the [main.py](https://github.com/stonezwr/TSSL-BP/blob/master/main.py#L198) (0 by default)
+Select the index of GPU in the [main.py](https://github.com/superrrpotato/Backpropagated-Neighborhood-Aggregation-for-Accurate-Training-of-Spiking-Neural-Networks/blob/master/main.py#L234) (0 by default)
 
 ### Run the code
 ```sh
